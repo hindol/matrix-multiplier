@@ -29,7 +29,7 @@ public:
         {
             for (unsigned j = 0; j < cols; ++j)
             {
-                elem[i][j] = 0;
+                elem[i * cols + j] = 0;
             }
         }
     }
@@ -41,7 +41,7 @@ public:
         {
             for (unsigned j = 0; j < cols; ++j)
             {
-                elem[i][j] = rand();
+                elem[i * cols + j] = rand();
             }
         }
     }
@@ -50,7 +50,7 @@ public:
     inline const value_type &operator ()(size_type row, size_type col) const
     {
         if (!(row < rows) || !(col < cols)) { throw std::out_of_range("Out of bound access!"); }
-        return elem[row][col];
+        return elem[row * cols + col];
     }
 
     // Accessor + modifier
@@ -62,7 +62,7 @@ public:
     }
 
 private:
-    value_type elem[rows][cols];
+    value_type elem[rows * cols];
 };
 
 

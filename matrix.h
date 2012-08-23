@@ -2,6 +2,7 @@
 #define MATRIX_H
 
 
+#include "CBLAS/include/cblas.h"
 #include <cstdlib>
 #include <iostream>
 #include <stdexcept>
@@ -71,6 +72,8 @@ void MultiplyNaive(Matrix<T, rowsLhs, colsRhs> *const res,
                    const Matrix<T, rowsLhs, common> &lhs,
                    const Matrix<T, common, colsRhs> &rhs)
 {
+    res->ZeroAll();
+
     /* Naive way of multiplying matrices. */
     for (unsigned i = 0; i < rowsLhs; ++i)
     {
@@ -90,6 +93,8 @@ void MultiplyOuterProduct(Matrix<T, rowsLhs, colsRhs> *const res,
                           const Matrix<T, rowsLhs, common> &lhs,
                           const Matrix<T, common, colsRhs> &rhs)
 {
+    res->ZeroAll();
+
     /* Outer product. */
     for (unsigned k = 0; k < common; ++k)
     {
@@ -115,16 +120,18 @@ void MultiplyBlocked(Matrix<T, rowsLhs, colsRhs> *const res,
                      Matrix<T, rowsLhs, common> lhs,
                      Matrix<T, common, colsRhs> rhs)
 {
+    res->ZeroAll();
+
     /* Matrix multiplication by blocks. */
     const unsigned COUNT_X = (rowsLhs - 1) / P + 1;
     const unsigned COUNT_Y = (colsRhs - 1) / R + 1;
     const unsigned COUNT_Z = (common - 1) / Q + 1;
 
-    for (unsigned x = 0; x < COUNT_X; ++x)
+    for (unsigned z = 0; z < COUNT_Z; ++z)
     {
-        for (unsigned y = 0; y < COUNT_Y; ++y)
+        for (unsigned x = 0; x < COUNT_X; ++x)
         {
-            for (unsigned z = 0; z < COUNT_Z; ++z)
+            for (unsigned y = 0; y < COUNT_Y; ++y)
             {
                 for (unsigned i = P * x, endI = std::min(P * (x + 1), rowsLhs); i < endI; ++i)
                 {
@@ -139,6 +146,17 @@ void MultiplyBlocked(Matrix<T, rowsLhs, colsRhs> *const res,
             }
         }
     }
+}
+
+
+template <class T, unsigned rowsLhs, unsigned common, unsigned colsRhs>
+void MultiplyCBLAS(Matrix<T, rowsLhs, colsRhs> *const res,
+                          Matrix<T, rowsLhs, common> &lhs,
+                          Matrix<T, common, colsRhs> &rhs)
+{
+    /* Multiply using the netlib CBLAS reference implementation. */
+    cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, rowsLhs, colsRhs, common,
+                1.0, &lhs(0, 0), common, &rhs(0, 0), colsRhs, 0.0, &(*res)(0, 0), rowsLhs);
 }
 
 

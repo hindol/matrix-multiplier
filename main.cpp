@@ -15,9 +15,9 @@ std::ostream& operator<<(std::ostream& os, const timespec &diff)
 template <class T, unsigned rows, unsigned cols>
 std::ostream& operator<<(std::ostream& os, const Matrix<T, rows, cols> &obj)
 {
-    for (unsigned i = 0; i < obj.Rows(); ++i)
+    for (unsigned i = 0; i < rows; ++i)
     {
-        for (unsigned j = 0; j < obj.Cols(); ++j)
+        for (unsigned j = 0; j < cols; ++j)
         {
             os << obj(i, j) << '\t';
         }
@@ -30,9 +30,8 @@ std::ostream& operator<<(std::ostream& os, const Matrix<T, rows, cols> &obj)
 int main(void)
 {
     const int TIMES_RUN = 10;
-    Matrix<float, 512, 512> A(RandFill), B(RandFill), C;
+    Matrix<float, 512, 512> A, B, C;
 
-    /*
     A(0, 0) = 1,  A(0, 1) = 2,  A(0, 2) = 3,  A(0, 3) = 4;
     A(1, 0) = 5,  A(1, 1) = 6,  A(1, 2) = 7,  A(1, 3) = 8;
     A(2, 0) = 9,  A(2, 1) = 10, A(2, 2) = 11, A(2, 3) = 12;
@@ -42,7 +41,6 @@ int main(void)
     B(1, 0) = 5,  B(1, 1) = 6,  B(1, 2) = 7,  B(1, 3) = 8;
     B(2, 0) = 9,  B(2, 1) = 10, B(2, 2) = 11, B(2, 3) = 12;
     B(3, 0) = 13, B(3, 1) = 14, B(3, 2) = 15, B(3, 3) = 16;
-    */
 
     Timer timer;
     timer.Start();
@@ -57,7 +55,6 @@ int main(void)
     std::cout << "Using naive algorithm for matrix multiplication." << std::endl;
     std::cout << "Total time: " << diff << "\n\n";
 
-    C.ZeroAll();
     timer.Start();
 
     for (int i = 0; i < TIMES_RUN; ++i)
@@ -70,7 +67,6 @@ int main(void)
     std::cout << "Using outer product approach for matrix multiplication." << std::endl;
     std::cout << "Total time: " << diff << "\n\n";
 
-    C.ZeroAll();
     const unsigned BLOCK_DIM = 16;
     timer.Start();
 
@@ -82,7 +78,19 @@ int main(void)
     diff = timer.Stop();
 
     std::cout << "Using multiply by block algorithm for matrix multiplication." << std::endl;
-    std::cout << "Total time: " << diff << std::endl;
+    std::cout << "Total time: " << diff << "\n\n";
+
+    timer.Start();
+
+    for (int i = 0; i < TIMES_RUN; ++i)
+    {
+        MultiplyCBLAS(&C, A, B);
+    }
+
+    diff = timer.Stop();
+
+    std::cout << "Using multiply by block algorithm for matrix multiplication." << std::endl;
+    std::cout << "Total time: " << diff << "\n\n";
 
     return 0;
 }
